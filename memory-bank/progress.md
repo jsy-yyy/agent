@@ -14,9 +14,9 @@ Status legend:
 
 | Field | Value |
 | --- | --- |
-| Current phase | Phase 1: repository structure |
-| Current step | 1.1 |
-| Overall status | Memory-bank alignment complete; ready for implementation structure |
+| Current phase | Phase 3: database and persistence |
+| Current step | 3.1 (not started) |
+| Overall status | Phase 2 backend minimal skeleton is complete and verified; Phase 3 has not started |
 | Last updated | 2026-05-10 |
 
 ## Phase 0: Project Memory And Rules
@@ -33,23 +33,25 @@ Status legend:
 
 | Step | Status | Notes |
 | --- | --- | --- |
-| 1.1 | todo | Create backend, frontend, data, report, and memory-bank structure. |
-| 1.2 | todo | Create backend module directories. |
-| 1.3 | todo | Create frontend module directories. |
-| 1.4 | todo | Establish ignored runtime data strategy. |
-| 1.5 | todo | Create environment variable example. |
-| 1.6 | todo | Update architecture with initial project boundaries. |
+| 1.1 | done | Created top-level `backend/`, `frontend/`, `data/`, and `report/`; `memory-bank/` already existed and remains the planning source. |
+| 1.2 | done | Created backend module directories under `backend/app/`: `api/`, `core/`, `models/`, `schemas/`, `services/`, `prompts/`, and `storage/`. |
+| 1.3 | done | Created frontend module directories under `frontend/src/`: `api/`, `components/`, `features/`, `hooks/`, and `types/`, including feature folders for textbooks, graph, integration, RAG, chat, and report. |
+| 1.4 | done | Added `.gitignore` rules for secrets, uploads, PDFs, database files, vector indexes, caches, dependency folders, and generated runtime data; `git check-ignore` verified representative runtime paths. |
+| 1.5 | done | Added `.env.example` with OpenAI-compatible provider variables, model names, data directory, and SQLite database URL. |
+| 1.6 | done | Updated `memory-bank/architecture.md` with the actual Phase 1 repository structure and file roles. |
+| 1.7 | done | Recorded Phase 1 completion and verification notes here for the next developer. |
 
 ## Phase 2: Backend Minimal Skeleton
 
 | Step | Status | Notes |
 | --- | --- | --- |
-| 2.1 | todo | Initialize FastAPI backend entrypoint. |
-| 2.2 | todo | Add configuration module. |
-| 2.3 | todo | Add unified error response convention. |
-| 2.4 | todo | Add task status model. |
-| 2.5 | todo | Add backend dependency list. |
-| 2.6 | todo | Update architecture with backend skeleton. |
+| 2.1 | done | Added `backend/app/main.py` with `create_app()`, FastAPI app assembly, router inclusion, and `GET /health`; verified through TestClient. |
+| 2.2 | done | Added centralized settings in `backend/app/core/config.py`; environment overrides for `DATA_DIR` and `DATABASE_URL` were verified in tests. |
+| 2.3 | done | Added `backend/app/core/errors.py` with structured error envelopes for application and validation errors; verified 404 and 422 shapes. |
+| 2.4 | done | Added task status constants, task schemas, task service, and simulated task endpoints for create, read, and fail; verified pending and failed states. |
+| 2.5 | done | Added minimal `backend/requirements.txt` for the Phase 2 FastAPI backend without unrelated frameworks. |
+| 2.6 | done | Updated `memory-bank/architecture.md` with backend startup, configuration, errors, task status, API routes, and file roles. |
+| 2.7 | done | Ran `PYTHONPATH=backend pytest backend/tests`; 5 tests passed and Phase 2 was recorded here for the next developer. |
 
 ## Phase 3: Database And Persistence
 

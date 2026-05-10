@@ -1,0 +1,58 @@
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Python runtime artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Node runtime artifacts
+node_modules/
+dist/
+build/
+.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Uploaded textbooks and generated runtime data
+*.pdf
+*.PDF
+*.docx
+*.DOCX
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+*.faiss
+*.index
+data/*
+!data/.gitkeep
+!data/uploads/
+data/uploads/*
+!data/uploads/.gitkeep
+!data/parsed/
+data/parsed/*
+!data/parsed/.gitkeep
+!data/graphs/
+data/graphs/*
+!data/graphs/.gitkeep
+!data/indexes/
+data/indexes/*
+!data/indexes/.gitkeep
+!data/reports/
+data/reports/*
+!data/reports/.gitkeep
+
+# Generated reports and caches
+report/*.pdf
+report/*.docx
+.DS_Store

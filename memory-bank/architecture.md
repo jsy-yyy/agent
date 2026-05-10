@@ -4,8 +4,8 @@ This file is the source of truth for the implemented architecture. It must be re
 
 ## Current Status
 
-- Implementation status: planning and documentation stage.
-- Codebase status: no application code has been implemented yet.
+- Implementation status: Phase 2 backend minimal skeleton completed and verified.
+- Codebase status: FastAPI backend entrypoint, health route, centralized settings, structured errors, in-memory task status service, and backend tests exist; no database persistence, upload flow, parsing, graph, RAG, or frontend runtime code has been implemented yet.
 - Database status: SQLite is selected, but the final schema will be defined and updated incrementally during implementation.
 - Required product source: `memory-bank/design-document.md`.
 - Required execution source: `memory-bank/implementation-plan.md`.
@@ -35,37 +35,147 @@ This file is the source of truth for the implemented architecture. It must be re
 - Background jobs: FastAPI BackgroundTasks for the initial implementation.
 - Configuration: `.env` and `.env.example`.
 
-## Planned Top-Level Structure
+## Implemented Top-Level Structure
 
 ```text
 .
 ├── backend/
 │   ├── app/
 │   │   ├── api/
+│   │   │   ├── __init__.py
+│   │   │   ├── health.py
+│   │   │   ├── router.py
+│   │   │   ├── tasks.py
+│   │   │   └── .gitkeep
 │   │   ├── core/
+│   │   │   ├── __init__.py
+│   │   │   ├── config.py
+│   │   │   ├── errors.py
+│   │   │   ├── task_status.py
+│   │   │   └── .gitkeep
 │   │   ├── models/
 │   │   ├── schemas/
+│   │   │   ├── __init__.py
+│   │   │   ├── health.py
+│   │   │   ├── tasks.py
+│   │   │   └── .gitkeep
 │   │   ├── services/
+│   │   │   ├── __init__.py
+│   │   │   ├── task_service.py
+│   │   │   └── .gitkeep
 │   │   ├── prompts/
 │   │   ├── storage/
-│   │   └── main.py
-│   └── requirements.txt
+│   │   ├── __init__.py
+│   │   ├── main.py
+│   │   └── .gitkeep
+│   ├── tests/
+│   │   └── test_phase2_backend_skeleton.py
+│   ├── requirements.txt
+│   └── .gitkeep
 ├── frontend/
 │   ├── src/
 │   │   ├── api/
 │   │   ├── components/
 │   │   ├── features/
+│   │   │   ├── textbooks/
+│   │   │   ├── graph/
+│   │   │   ├── integration/
+│   │   │   ├── rag/
+│   │   │   ├── chat/
+│   │   │   └── report/
 │   │   ├── hooks/
 │   │   ├── types/
-│   │   └── App.tsx
-│   └── package.json
+│   │   └── .gitkeep
+│   └── .gitkeep
 ├── data/
+│   ├── uploads/
+│   ├── parsed/
+│   ├── graphs/
+│   ├── indexes/
+│   ├── reports/
+│   └── .gitkeep
 ├── memory-bank/
 ├── report/
 ├── .env.example
 ├── .gitignore
-└── README.md
+└── AGENTS.md
 ```
+
+Future implementation steps are expected to add database modules, upload/parsing services, `frontend/package.json`, `frontend/src/App.tsx`, and README/docs. They do not exist yet because Phase 2 only establishes the minimal backend skeleton.
+
+## Phase 1 File Roles
+
+| File | Role |
+| --- | --- |
+| `.gitignore` | Keeps local secrets, uploaded textbooks, PDFs, SQLite databases, vector indexes, dependency folders, caches, and generated runtime artifacts out of git while allowing directory placeholders. |
+| `.env.example` | Documents the OpenAI-compatible provider settings, model names, `DATA_DIR`, and `DATABASE_URL` expected by later backend configuration code. |
+| `AGENTS.md` | Repository-level AI coding rules. It requires reading `memory-bank/architecture.md` and `memory-bank/design-document.md` before code changes and keeping architecture memory current. |
+| `backend/.gitkeep` | Retains the backend root in git alongside the Phase 2 backend files. |
+| `backend/app/.gitkeep` | Retains the backend application package root in git alongside runtime modules. |
+| `backend/app/api/.gitkeep` | Retains the HTTP route directory in git alongside implemented route modules. |
+| `backend/app/core/.gitkeep` | Retains the backend core directory in git alongside implemented configuration, error, and status modules. |
+| `backend/app/models/.gitkeep` | Tracks the future SQLite model and persistence access boundary. |
+| `backend/app/schemas/.gitkeep` | Retains the schema directory in git alongside implemented response and task schemas. |
+| `backend/app/services/.gitkeep` | Retains the service directory in git alongside the implemented task service. |
+| `backend/app/prompts/.gitkeep` | Tracks the future prompt-template boundary for LLM tasks. |
+| `backend/app/storage/.gitkeep` | Tracks the future local storage helper boundary. |
+| `frontend/.gitkeep` | Tracks the frontend root before Vite package files are added. |
+| `frontend/src/.gitkeep` | Tracks the frontend source root before React source files are added. |
+| `frontend/src/api/.gitkeep` | Tracks the future typed frontend API client boundary. |
+| `frontend/src/components/.gitkeep` | Tracks the future reusable presentation component boundary. |
+| `frontend/src/features/textbooks/.gitkeep` | Tracks the future textbook upload, file list, parsing status, and chapter tree feature area. |
+| `frontend/src/features/graph/.gitkeep` | Tracks the future Cytoscape graph canvas, search, and node details feature area. |
+| `frontend/src/features/integration/.gitkeep` | Tracks the future integration decision and compression statistics feature area. |
+| `frontend/src/features/rag/.gitkeep` | Tracks the future RAG question, answer, citation, and source chunk feature area. |
+| `frontend/src/features/chat/.gitkeep` | Tracks the future teacher feedback conversation feature area. |
+| `frontend/src/features/report/.gitkeep` | Tracks the future report generation and preview feature area. |
+| `frontend/src/hooks/.gitkeep` | Tracks the future frontend state and polling hooks boundary. |
+| `frontend/src/types/.gitkeep` | Tracks the future shared TypeScript type boundary. |
+| `data/.gitkeep` | Tracks the runtime data root while generated contents remain ignored. |
+| `data/uploads/.gitkeep` | Tracks the upload storage directory while uploaded textbooks remain ignored. |
+| `data/parsed/.gitkeep` | Tracks the parsed artifact directory while generated parsed files remain ignored. |
+| `data/graphs/.gitkeep` | Tracks the graph artifact directory while generated graph files remain ignored. |
+| `data/indexes/.gitkeep` | Tracks the vector index directory while generated FAISS/index files remain ignored. |
+| `data/reports/.gitkeep` | Tracks the generated report artifact directory while generated report files remain ignored. |
+| `report/.gitkeep` | Tracks the final human-facing report directory before `report/整合报告.md` is generated in a later phase. |
+
+## Phase 2 Backend File Roles
+
+| File | Role |
+| --- | --- |
+| `backend/requirements.txt` | Minimal backend dependency list for the Phase 2 FastAPI skeleton: FastAPI, Uvicorn, multipart support, Pydantic, and pydantic-settings. |
+| `backend/app/__init__.py` | Marks `app` as the backend Python package. |
+| `backend/app/main.py` | FastAPI entrypoint. Defines `create_app()`, registers error handlers, includes the API router, and exposes the module-level `app` used by Uvicorn. |
+| `backend/app/api/__init__.py` | Marks the backend route package. |
+| `backend/app/api/router.py` | Aggregates backend routers so `main.py` has one route inclusion point. |
+| `backend/app/api/health.py` | Thin health route module. `GET /health` returns basic service status and app name from centralized settings. |
+| `backend/app/api/tasks.py` | Thin simulated task route module. Exposes create, read, and fail endpoints under `/api/tasks/*` and delegates logic to `TaskService`. |
+| `backend/app/core/__init__.py` | Marks the backend core package. |
+| `backend/app/core/config.py` | Centralized settings loader. Uses `pydantic-settings` when installed and a small environment fallback otherwise; exposes cached `get_settings()` and `clear_settings_cache()` for tests. |
+| `backend/app/core/errors.py` | Shared application error type and FastAPI exception handlers. All handled errors return `{"error": {"code": "...", "message": "...", "details": ...}}`. |
+| `backend/app/core/task_status.py` | Canonical task status enum with `pending`, `running`, `completed`, and `failed`. |
+| `backend/app/schemas/__init__.py` | Marks the typed schema package. |
+| `backend/app/schemas/health.py` | Pydantic response schema for the health endpoint. |
+| `backend/app/schemas/tasks.py` | Pydantic request and response schemas for simulated task operations. |
+| `backend/app/services/__init__.py` | Marks the backend service package. |
+| `backend/app/services/task_service.py` | In-memory task service for Phase 2. It creates simulated pending tasks, retrieves tasks, marks tasks failed, and raises structured `AppError` for missing task IDs. This is intentionally non-persistent until Phase 3. |
+| `backend/tests/test_phase2_backend_skeleton.py` | Phase 2 verification tests covering health, environment override behavior, structured error envelopes, and simulated task create/read/fail behavior. |
+
+## Backend Startup And Verification
+
+The backend app object is `app.main:app` when `PYTHONPATH=backend` is set. A local developer can start the Phase 2 backend with:
+
+```bash
+PYTHONPATH=backend uvicorn app.main:app --reload
+```
+
+Phase 2 verification command:
+
+```bash
+PYTHONPATH=backend pytest backend/tests
+```
+
+Current verified result: 5 tests passed.
 
 ## Planned Backend Modules
 
@@ -83,6 +193,22 @@ This file is the source of truth for the implemented architecture. It must be re
 | `services/reporting` | Markdown report generation. |
 | `prompts/` | LLM prompts for extraction, alignment, RAG answering, and feedback interpretation. |
 | `storage/` | Local file storage, uploaded files, generated artifacts, index files. |
+
+## Implemented Backend API Surface
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/health` | Health check returning `status` and configured `app_name`. |
+| `POST` | `/api/tasks/simulated` | Creates an in-memory simulated task in `pending` status. |
+| `GET` | `/api/tasks/{task_id}` | Retrieves a simulated task by ID or returns a structured `task_not_found` error. |
+| `POST` | `/api/tasks/{task_id}/fail` | Marks a simulated task as `failed` with a provided `error_message`. |
+
+## Implemented Backend Conventions
+
+- Configuration is centralized in `backend/app/core/config.py`.
+- Environment variables currently supported by settings are `DATA_DIR`, `DATABASE_URL`, `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `LLM_MODEL`, and `EMBEDDING_MODEL`.
+- Application errors and validation errors use one envelope shape: `{"error": {"code": string, "message": string, "details": optional}}`.
+- Phase 2 task state is in-memory only. It proves the status contract and API shape; durable task persistence belongs to Phase 3.
 
 ## Planned Frontend Modules
 
@@ -136,7 +262,7 @@ Planned entities:
 
 Runtime files live under `data/` and must not be committed.
 
-Planned directories:
+Implemented Phase 1 storage directories:
 
 ```text
 data/
@@ -146,6 +272,8 @@ data/
   indexes/
   reports/
 ```
+
+The `.gitignore` policy ignores generated files under these directories while keeping only `.gitkeep` placeholders tracked.
 
 ## API Surface Draft
 
@@ -172,3 +300,5 @@ These API groups are planned and may be refined during implementation:
 | Date | Change |
 | --- | --- |
 | 2026-05-10 | Initialized architecture memory from planning documents and user clarifications. |
+| 2026-05-10 | Completed Phase 1 repository structure, added ignore rules and environment example, and documented every current scaffold file role. |
+| 2026-05-10 | Completed Phase 2 backend skeleton with FastAPI startup, centralized settings, structured error responses, in-memory simulated task status endpoints, backend requirements, and tests. |
