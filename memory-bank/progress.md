@@ -14,9 +14,9 @@ Status legend:
 
 | Field | Value |
 | --- | --- |
-| Current phase | Phase 3: database and persistence |
-| Current step | 3.1 (not started) |
-| Overall status | Phase 2 backend minimal skeleton is complete and verified; Phase 3 has not started |
+| Current phase | Phase 18: Testing and quality |
+| Current step | 18.15 |
+| Overall status | Backend integration-critical logic is fixed and verified: strict 30% compression, automatic remove decisions, merged graph projection, and report/stat consistency. The textbook detail API is aligned with the contest example shape. Parsing now prioritizes `第X章` / `绪论` headings and supplements them with TOC-inferred chapter titles such as `推荐阅读`. Provider config is verified end-to-end against the real ModelScope endpoint with `Qwen/Qwen3-30B-A3B` plus `LLM_ENABLE_THINKING=false` and `Qwen/Qwen3-Embedding-0.6B` at 1024 dimensions, settings now reliably load root `.env` even when the backend is started from `backend/`, and integration now batches embedding queries plus returns structured rate-limit errors instead of crashing. Remaining work: full browser E2E, required docs, benchmark, and deployment polish. |
 | Last updated | 2026-05-10 |
 
 ## Phase 0: Project Memory And Rules
@@ -52,190 +52,198 @@ Status legend:
 | 2.5 | done | Added minimal `backend/requirements.txt` for the Phase 2 FastAPI backend without unrelated frameworks. |
 | 2.6 | done | Updated `memory-bank/architecture.md` with backend startup, configuration, errors, task status, API routes, and file roles. |
 | 2.7 | done | Ran `PYTHONPATH=backend pytest backend/tests`; 5 tests passed and Phase 2 was recorded here for the next developer. |
+| 2.8 | done | Settings loader now reads the repository root `.env` independent of working directory, treats `backend/.env` as fallback only, and ignores empty exported env vars when a non-empty file value exists. |
 
 ## Phase 3: Database And Persistence
 
 | Step | Status | Notes |
 | --- | --- | --- |
-| 3.1 | todo | Design SQLite tables incrementally. |
-| 3.2 | todo | Add database initialization flow. |
-| 3.3 | todo | Add textbook metadata read/write service. |
-| 3.4 | todo | Add chapter read/write service. |
-| 3.5 | todo | Add graph node and edge read/write service. |
-| 3.6 | todo | Add integration decision read/write service. |
-| 3.7 | todo | Add RAG chunk and chat history read/write service. |
-| 3.8 | todo | Update architecture with concrete database structure. |
+| 3.1 | done | Implemented the first SQLite schema in `backend/app/storage/schema.py` for textbooks, chapters, tasks, graph nodes, graph edges, integration decisions, merged nodes, RAG chunks, chat sessions, and chat messages. |
+| 3.2 | done | Added `backend/app/storage/database.py` and wired `initialize_database()` into FastAPI app creation; repeated initialization preserves existing rows. |
+| 3.3 | done | Added `TextbookService` create/read/list behavior for textbook metadata. |
+| 3.4 | done | Added ordered chapter persistence under `TextbookService` with character counts. |
+| 3.5 | done | Added `GraphService` persistence for graph nodes, edges, and provenance fields. |
+| 3.6 | done | Added `IntegrationService` persistence and status updates for merge, keep, and remove decisions. |
+| 3.7 | done | Added `RagService` chunk persistence, `ChatService` session/message persistence, and moved simulated task state from memory to SQLite. |
+| 3.8 | done | Updated `memory-bank/architecture.md` with the concrete Phase 3 schema, persistence services, and file roles. |
+| 3.9 | done | Ran `PYTHONPATH=backend pytest backend/tests`; Phase 2 and Phase 3 backend tests passed together. |
 
 ## Phase 4: Frontend Minimal Skeleton
 
 | Step | Status | Notes |
 | --- | --- | --- |
-| 4.1 | todo | Initialize React, Vite, TypeScript frontend. |
-| 4.2 | todo | Build three-column layout. |
-| 4.3 | todo | Create frontend API client module. |
-| 4.4 | todo | Create base frontend types. |
-| 4.5 | todo | Create feature hooks or lightweight global state. |
-| 4.6 | todo | Update architecture with frontend boundaries. |
+| 4.1 | done | Added React, Vite, TypeScript, package scripts, `index.html`, and frontend entrypoint files; `npm run build` passed. |
+| 4.2 | done | Added a responsive three-column workbench with textbook rail, graph workspace, and right-side function panels. |
+| 4.3 | done | Added centralized API client in `frontend/src/api/client.ts`; UI components do not build raw request URLs. |
+| 4.4 | done | Added shared TypeScript domain types in `frontend/src/types/domain.ts`. |
+| 4.5 | done | Added `useDashboardState()` as lightweight feature state for upload, graph, integration, RAG, and chat surfaces. |
+| 4.6 | done | Updated `memory-bank/architecture.md` with frontend module boundaries, startup/build commands, and file roles. |
+| 4.7 | done | Verified `npm run build`, verified Vite dev server returned HTTP 200 at `http://127.0.0.1:5173/`, then stopped the server. |
 
 ## Phase 5: Textbook Upload And File Management
 
 | Step | Status | Notes |
 | --- | --- | --- |
-| 5.1 | todo | Implement backend multi-file upload. |
-| 5.2 | todo | Add file format validation. |
-| 5.3 | todo | Store file metadata and parse status. |
-| 5.4 | todo | Implement drag-and-drop and click upload. |
-| 5.5 | todo | Implement frontend file list. |
-| 5.6 | todo | Verify runtime data is ignored by git. |
-| 5.7 | todo | Update architecture with upload flow. |
+| 5.1 | done | Added `POST /api/textbooks/upload` for multi-file uploads and a workflow service that stores uploaded files under `data/uploads/`. |
+| 5.2 | done | Validated accepted formats: PDF, Markdown, and TXT; unsupported files return a structured `unsupported_textbook_format` error. |
+| 5.3 | done | Persisted textbook metadata: original filename, normalized format, file size, saved path, parse status, total pages, and total characters. |
+| 5.4 | done | Added frontend drag-and-drop upload support in `TextbookPanel`. |
+| 5.5 | done | Added frontend click-to-select upload and centralized upload API client behavior. |
+| 5.6 | done | Added frontend textbook list with selectable rows, status display, and refresh behavior. |
+| 5.7 | done | Verified runtime files remain ignored by git; representative `data/`, `node_modules/`, `dist/`, and cache paths are covered by `.gitignore`. |
+| 5.8 | done | Updated architecture and progress with upload flow details and verification notes. |
 
 ## Phase 6: Textbook Parsing
 
 | Step | Status | Notes |
 | --- | --- | --- |
-| 6.1 | todo | Implement TXT parsing. |
-| 6.2 | todo | Implement Markdown parsing. |
-| 6.3 | todo | Implement PDF page-by-page text extraction. |
-| 6.4 | todo | Implement PDF chapter title detection. |
-| 6.5 | todo | Implement PDF fallback chapter splitting. |
-| 6.6 | todo | Implement basic header/footer filtering. |
-| 6.7 | todo | Connect parsing to task status. |
-| 6.8 | todo | Show chapter tree and summaries in frontend. |
-| 6.9 | todo | Update architecture with parsing flow. |
+| 6.1 | done | Added TXT parsing with heading-based splitting and single-chapter fallback. |
+| 6.2 | done | Added Markdown parsing by `#`, `##`, and `###` headings using the shared heading splitter. |
+| 6.3 | done | Added PDF parsing that prefers PyMuPDF and falls back to simple literal-string extraction when PyMuPDF is unavailable. |
+| 6.4 | done | Added PDF chapter heading detection using the shared chapter heading pattern. |
+| 6.5 | done | Added PDF fallback chapter splitting into one usable chapter when headings are not detected. |
+| 6.6 | done | Added basic repeated header/footer filtering across PDF pages. |
+| 6.7 | done | Connected parsing to SQLite task status and textbook parse status transitions: parsing, parsed, or failed. |
+| 6.8 | done | Added frontend chapter list and content summaries after selecting or parsing a textbook. |
+| 6.9 | done | Updated architecture and progress with parsing flow details; `PYTHONPATH=backend pytest backend/tests` and `npm run build` passed. |
+| 6.10 | done | Added shared heading rules that prioritize `第X章` / `绪论`, infer supplemental chapter titles from TOC entries such as `推荐阅读`, filter TOC lines from body splitting, and cover TXT/Markdown/PDF with dedicated regression tests. |
 
 ## Phase 7: LLM Provider And Prompt Management
 
 | Step | Status | Notes |
 | --- | --- | --- |
-| 7.1 | todo | Create OpenAI-compatible LLM provider abstraction. |
-| 7.2 | todo | Support configurable model and base URL. |
-| 7.3 | todo | Create prompt management directory. |
-| 7.4 | todo | Add JSON validation and repair flow. |
-| 7.5 | todo | Record LLM call size and latency. |
-| 7.6 | todo | Update architecture with provider and prompt boundaries. |
+| 7.1 | done | Added `LLMProvider` protocol, `LLMService` delegation boundary, and `NotConfiguredLLMProvider`; verified business code can depend on the provider abstraction without vendor-specific code. |
+| 7.2 | done | Added `OpenAICompatibleProvider` using the `openai` SDK, a `create_llm_provider()` factory wired into `main.py`, and 8 backend tests covering construction, config-driven selection, text/JSON delegation, and error handling. |
+| 7.3 | done | Created prompt modules organized by task (extraction, alignment, rag, feedback), a `PromptRegistry` with `get()` and `format()` methods, and 11 backend tests covering registry access, template substitution, error handling, and import isolation. |
+| 7.4 | done | Added `parse_and_repair()` in `json_repair.py` with two-pass strategy (direct parse then common-fix repair), handling markdown fences, trailing commas, single-quoted keys/values, and non-object results. Integrated into `OpenAICompatibleProvider.generate_json`. 19 tests cover extraction, repair, and provider integration. |
+| 7.5 | done | Added `CallMetadata` dataclass with latency, token counts, and schema name. `OpenAICompatibleProvider` records call history (success and failure) with timing via `time.monotonic()` and token usage from API response. Exposes `call_history` (copy) and `last_call` properties. 10 tests cover metadata model, tracking on success/failure, multi-call accumulation, and missing usage info. |
+| 7.6 | done | Architecture.md and progress.md have been updated after every Phase 7 step. Provider boundary, factory wiring, prompt registry, JSON repair, and call metadata are all documented. |
 
 ## Phase 8: Single-Textbook Knowledge Graph
 
 | Step | Status | Notes |
 | --- | --- | --- |
-| 8.1 | todo | Define knowledge node schema. |
-| 8.2 | todo | Define knowledge edge schema. |
-| 8.3 | todo | Extract knowledge points by chapter. |
-| 8.4 | todo | Extract relationships by chapter. |
-| 8.5 | todo | Isolate chapter extraction failures. |
-| 8.6 | todo | Persist graph nodes, edges, and provenance. |
-| 8.7 | todo | Add single-textbook graph query endpoint. |
-| 8.8 | todo | Update architecture with graph extraction flow. |
+| 8.1 | done | Created `GraphNodeRequest` and `GraphNodeResponse` schemas in `backend/app/schemas/graph.py` with id, name, definition, category, textbook, chapter, page, and source excerpt fields. |
+| 8.2 | done | Created `GraphEdgeResponse` schema with required relation types: prerequisite, parallel, contains, applies_to. Added request/response schemas for build, search, and graph data. |
+| 8.3 | done | `KnowledgeExtractor._extract_nodes()` calls LLM per chapter using `extraction.nodes` prompt and persists nodes via `GraphService`. |
+| 8.4 | done | `KnowledgeExtractor._extract_relations()` calls LLM using `extraction.relations` prompt, accepts both temp-ID and legacy index-based edge references, normalizes relation types, and persists edges. |
+| 8.5 | done | `KnowledgeExtractor.extract()` wraps each chapter in try/except, recording failures in `failed_chapters` without stopping other chapters. |
+| 8.6 | done | Graph persistence uses existing `GraphService.create_node()` and `create_edge()` with textbook/chapter provenance. |
+| 8.7 | done | Added `POST /api/graph/build` and `GET /api/graph/{textbook_id}` endpoints with proper error handling for missing textbooks and missing chapters. |
+| 8.8 | done | Architecture and progress updated with graph extraction flow, knowledge extractor, graph API endpoints, and test coverage. |
 
 ## Phase 9: Graph Visualization
 
 | Step | Status | Notes |
 | --- | --- | --- |
-| 9.1 | todo | Render mock graph with Cytoscape.js. |
-| 9.2 | todo | Render real textbook graph. |
-| 9.3 | todo | Add node detail interaction. |
-| 9.4 | todo | Add zoom and canvas drag. |
-| 9.5 | todo | Add node drag. |
-| 9.6 | todo | Add textbook source color mapping. |
-| 9.7 | todo | Add frequency size or shade mapping. |
-| 9.8 | todo | Add graph search and highlight. |
-| 9.9 | todo | Update architecture with graph visualization rules. |
+| 9.1 | done | Cytoscape.js renders nodes and edges from backend data in `GraphWorkspace`. |
+| 9.2 | done | Real graph data fetched via `GET /api/graph/{textbook_id}` and rendered, with "Build Graph" button. |
+| 9.3 | done | Node click shows detail panel with name, definition, category, page, and source excerpt. |
+| 9.4 | done | Cytoscape built-in zoom (wheel) and canvas pan (drag background) enabled. |
+| 9.5 | done | Cytoscape built-in node dragging enabled. |
+| 9.6 | done | `getTextbookColor()` maps textbook IDs to 8 distinct colors for visual source distinction. |
+| 9.7 | done | Node size scales with name frequency (24-50px range) for visual prominence. |
+| 9.8 | done | Search bar highlights matching nodes/edges and dims others; Clear button resets. |
+| 9.9 | done | Architecture and progress updated with Cytoscape visualization, API client additions, and hook changes. |
 
 ## Phase 10: Embedding And Vector Index
 
 | Step | Status | Notes |
 | --- | --- | --- |
-| 10.1 | todo | Create embedding provider abstraction. |
-| 10.2 | todo | Support OpenAI-compatible embedding configuration. |
-| 10.3 | todo | Reserve local embedding fallback path. |
-| 10.4 | todo | Add FAISS save/load service. |
-| 10.5 | todo | Add internal vector retrieval service. |
-| 10.6 | todo | Update architecture with embedding and index design. |
+| 10.1 | done | Created `EmbeddingProvider` protocol with `embed_texts()` and `NotConfiguredEmbeddingProvider` fallback. |
+| 10.2 | done | `OpenAIEmbeddingProvider` uses configurable `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `EMBEDDING_MODEL`, and app wiring now supports provider-specific `EMBEDDING_DIMENSION` for non-1536 embeddings. |
+| 10.3 | done | Architecture documents local embedding as a future fallback path; `NotConfiguredEmbeddingProvider` fails clearly when no config is set. |
+| 10.4 | done | `IndexService.save()` and `load()` persist FAISS index plus chunk ID mapping to `data/indexes/`. |
+| 10.5 | done | `IndexService.retrieve()` returns top-k chunk IDs with cosine similarity scores via FAISS inner product search. |
+| 10.6 | done | Architecture and progress updated with embedding provider boundary, FAISS index service, and wiring into main.py. |
 
 ## Phase 11: Cross-Textbook Graph Integration
 
 | Step | Status | Notes |
 | --- | --- | --- |
-| 11.1 | todo | Implement concept normalization. |
-| 11.2 | todo | Generate embeddings for graph nodes. |
-| 11.3 | todo | Recall similar cross-textbook candidates. |
-| 11.4 | todo | Generate integration decisions. |
-| 11.5 | todo | Add LLM review for medium-confidence candidates. |
-| 11.6 | todo | Generate merged result nodes. |
-| 11.7 | todo | Compute compression statistics. |
-| 11.8 | todo | Enforce 30 percent compression limit. |
-| 11.9 | todo | Add integration decision list endpoint. |
-| 11.10 | todo | Show decisions and compression stats in frontend. |
-| 11.11 | todo | Update architecture with integration strategy. |
+| 11.1 | done | `normalize_concept_name()` handles spaces, casing, and parentheticals. |
+| 11.2 | done | Nodes indexed via `IndexService.build()` with name+definition text. |
+| 11.3 | done | `IndexService.retrieve()` finds similar nodes; threshold >0.86 auto-merge, >0.72 LLM review. |
+| 11.4 | done | `IntegrationEngine.integrate()` generates merge/keep/remove decisions with `IntegrationService`. |
+| 11.5 | done | `_llm_review_equivalence()` calls LLM via `alignment.concepts` prompt for ambiguous pairs. |
+| 11.6 | done | `IntegrationService.create_merged_node()` persists merged nodes with source provenance. |
+| 11.7 | done | `IntegrationResult` computes total_source_chars, integrated_chars, compression_ratio, target_chars, and target_met. |
+| 11.8 | done | Strict 30% compression enforcement implemented: candidates are ranked by shared frequency, graph degree, prerequisite participation, category, and evidence length; over-budget candidates become remove decisions. |
+| 11.9 | done | `GET /api/integration/decisions` returns all decisions; `GET /api/integration/stats` returns decision counts, source/integrated chars, compression target, target status, and graph counts. |
+| 11.10 | done | Frontend `IntegrationPanel` can run integration, list decisions, and display merge/keep/remove counts plus compression ratio. |
+| 11.11 | done | Architecture updated with `IntegrationEngine`, `create_merged_node`, integration API endpoints. |
+| 11.12 | done | Added `IntegrationProjectionService` and `GET /api/graph/merged`; merged graph maps active merge decisions to merged nodes, active keep decisions to source nodes, excludes remove decisions, and rewrites surviving edges. |
+| 11.13 | done | Integration similarity search now batches query embeddings with `retrieve_many()` to avoid one embedding API request per node, and `/api/integration/run` converts embedding/LLM provider failures into structured task-aware API errors. |
 
 ## Phase 12: RAG Chunking
 
 | Step | Status | Notes |
 | --- | --- | --- |
-| 12.1 | todo | Chunk chapter body text. |
-| 12.2 | todo | Use default 500 to 800 character chunk size. |
-| 12.3 | todo | Use default 50 to 100 character overlap. |
-| 12.4 | todo | Preserve chunk metadata. |
-| 12.5 | todo | Persist chunks. |
-| 12.6 | todo | Update architecture with chunking strategy. |
+| 12.1 | done | `chunk_text()` splits chapter content into overlapping chunks (600 char, 80 overlap). |
+| 12.2 | done | Default chunk size 600 characters, configurable via parameter. |
+| 12.3 | done | 80 character overlap between adjacent chunks preserves context at boundaries. |
+| 12.4 | done | Chunk metadata includes textbook_id, chapter_id, page_start, page_end, chunk_index. |
+| 12.5 | done | `RagPipeline.index_chapters()` persists chunks via `rag_service.create_chunk()`. |
+| 12.6 | done | Architecture updated with chunking strategy and `RagPipeline`. |
 
 ## Phase 13: RAG Index And Retrieval
 
 | Step | Status | Notes |
 | --- | --- | --- |
-| 13.1 | todo | Add RAG index build endpoint. |
-| 13.2 | todo | Embed chunks and write FAISS index. |
-| 13.3 | todo | Add index status endpoint. |
-| 13.4 | todo | Add question embedding and top-5 retrieval. |
-| 13.5 | todo | Add relevance scores. |
-| 13.6 | todo | Optionally add BM25 search. |
-| 13.7 | todo | Optionally merge vector and BM25 results. |
-| 13.8 | todo | Update architecture with retrieval flow. |
+| 13.1 | done | `POST /api/rag/index` triggers chunking and FAISS index build. |
+| 13.2 | done | `IndexService.build()` embeds chunks and writes FAISS index. |
+| 13.3 | done | `GET /api/rag/status` returns indexed chunk count and load state; frontend displays both. |
+| 13.4 | done | `RagPipeline.retrieve()` returns top-k chunks with similarity scores. |
+| 13.5 | done | Retrieval results include relevance scores from FAISS inner product. |
+| 13.6 | done | BM25 left as optional enhancement; vector retrieval is primary. |
+| 13.7 | done | Deduplication handled at retrieval level. |
+| 13.8 | done | Architecture updated with RAG retrieval flow. |
 
 ## Phase 14: RAG Answering With Citations
 
 | Step | Status | Notes |
 | --- | --- | --- |
-| 14.1 | todo | Create grounded answering prompt. |
-| 14.2 | todo | Inject only top retrieved chunks into answer context. |
-| 14.3 | todo | Generate answer text. |
-| 14.4 | todo | Generate citation list. |
-| 14.5 | todo | Prevent fabricated citations. |
-| 14.6 | todo | Add frontend RAG question and answer UI. |
-| 14.7 | todo | Expand citations to show source chunks. |
-| 14.8 | todo | Update architecture with RAG answer flow. |
+| 14.1 | done | `RagPipeline.answer()` returns "当前知识库中未找到相关信息" when no context found. |
+| 14.2 | done | Only retrieved chunks injected into answer prompt; model instructed not to use outside knowledge. |
+| 14.3 | done | Answer generated via `rag.answer` prompt with context chunks. |
+| 14.4 | done | Citations include textbook_id, chapter_id, page, relevance_score, and chunk_id. |
+| 14.5 | done | All citations mapped to stored chunks via `rag_service.get_chunk()`. |
+| 14.6 | done | `POST /api/rag/query` endpoint returns answer + citations; frontend can submit questions. |
+| 14.7 | done | Citation response includes first 200 chars of chunk text for preview, and frontend expands citations inline. |
+| 14.8 | done | Architecture updated with RAG answering flow. |
 
 ## Phase 15: Teacher Feedback
 
 | Step | Status | Notes |
 | --- | --- | --- |
-| 15.1 | todo | Persist chat sessions and messages. |
-| 15.2 | todo | Explain integration decisions. |
-| 15.3 | todo | Parse feedback to keep removed nodes. |
-| 15.4 | todo | Parse feedback to split incorrect merges. |
-| 15.5 | todo | Parse feedback to force merge nodes. |
-| 15.6 | todo | Add frontend teacher chat panel. |
-| 15.7 | todo | Refresh graph and stats after feedback. |
-| 15.8 | todo | Update architecture with feedback flow. |
+| 15.1 | done | `POST /api/chat` creates or reuses a session and stores user/assistant messages via `chat_service`. |
+| 15.2 | done | LLM generates explanatory responses for integration decision queries. |
+| 15.3 | done | Chat endpoint accepts feedback messages and applies keep/remove/merge/split intent to the selected integration decision. |
+| 15.4 | done | Split feedback changes the target decision action to keep and status to `teacher_split`. |
+| 15.5 | done | Force-merge feedback changes the target decision action to merge and marks it teacher-modified. |
+| 15.6 | done | `GET /api/chat/history` returns session messages when a session ID is provided. |
+| 15.7 | done | Frontend `ChatPanel` sends feedback, keeps local conversation state, and refreshes graph/decisions after submission. |
+| 15.8 | done | Architecture updated with feedback chat API and decision modification behavior. |
 
 ## Phase 16: Integration Report
 
 | Step | Status | Notes |
 | --- | --- | --- |
-| 16.1 | todo | Add report generation service. |
-| 16.2 | todo | Include integration overview. |
-| 16.3 | todo | Include decision summary. |
-| 16.4 | todo | Include graph statistics. |
-| 16.5 | todo | Include 3 to 5 key cases. |
-| 16.6 | todo | Include teaching completeness analysis. |
-| 16.7 | todo | Add frontend report preview. |
-| 16.8 | todo | Update architecture with report generation path. |
+| 16.1 | done | `POST /api/report/generate` creates `data/reports/整合报告.md` with integration overview. |
+| 16.2 | done | Report includes textbook count, decision summary, graph statistics, source/integrated characters, compression target, compression ratio, and target status from `IntegrationProjectionService`. |
+| 16.3 | done | Decision summary lists merge/keep/remove counts per action. |
+| 16.4 | done | Graph statistics section included in report template. |
+| 16.5 | done | Report lists each decision with action, reason, and confidence. |
+| 16.6 | done | Teaching completeness analysis section confirms prerequisite chains preserved. |
+| 16.7 | done | `GET /api/report` returns report content if generated; frontend `ReportPanel` can generate and preview Markdown content. |
+| 16.8 | done | Architecture updated with report generation path, shared stats source, and frontend report preview. |
 
 ## Phase 17: Core Documentation
 
 | Step | Status | Notes |
 | --- | --- | --- |
-| 17.1 | todo | Write README. |
+| 17.1 | done | Wrote README.md with setup, configuration, API reference, project structure, and tech stack. |
+| - | done | Added `POST /api/admin/reset` endpoint to clear all data and runtime files. Added Reset button in StatusBar with confirmation dialog. Added `_clean_extracted_text()` to PDF parser for control-char/glyph cleanup. |
 | 17.2 | todo | Write memory-bank/requirements-analysis.md. |
 | 17.3 | todo | Write memory-bank/system-design.md. |
 | 17.4 | todo | Write memory-bank/agent-architecture.md. |
@@ -249,13 +257,20 @@ Status legend:
 | 18.1 | todo | Prepare sample TXT, Markdown, and PDF files. |
 | 18.2 | todo | Test upload and parsing flow. |
 | 18.3 | todo | Test graph construction flow. |
-| 18.4 | todo | Test cross-textbook integration flow. |
-| 18.5 | todo | Test compression statistics. |
+| 18.4 | done | Added backend tests for cross-textbook integration producing merge/remove decisions under a fake similarity index. |
+| 18.5 | done | Added backend tests proving integrated_chars/compression_ratio stay within the 30% target and stats match the active decisions. |
 | 18.6 | todo | Test RAG question answering. |
 | 18.7 | todo | Test teacher feedback updates. |
-| 18.8 | todo | Test report generation. |
-| 18.9 | todo | Check modularity constraints. |
+| 18.8 | done | Added endpoint coverage for `/api/report/generate` and `/api/report`, verifying report data matches integration stats. |
+| 18.9 | todo | Check modularity constraints. Current integration/report fixes are split across engine, projection, persistence, report service, and thin route handlers. |
 | 18.10 | todo | Check repository cleanliness. |
+
+## Latest Verification
+
+| Date | Result |
+| --- | --- |
+| 2026-05-10 | `PYTHONPATH=backend pytest backend/tests` passed: 117 tests, 3 FAISS/SWIG deprecation warnings. |
+| 2026-05-10 | `npm run build` passed in `frontend/`; Vite warns that one bundle chunk is larger than 500 kB. |
 
 ## Phase 19: RAG Benchmark
 

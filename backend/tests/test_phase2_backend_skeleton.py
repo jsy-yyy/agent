@@ -39,6 +39,63 @@ def test_settings_read_environment_overrides(monkeypatch) -> None:
     clear_settings_cache()
 
 
+def test_settings_can_read_repo_env_file_independent_of_cwd(monkeypatch, tmp_path) -> None:
+    from app.core.config import get_settings
+
+    env_file = tmp_path / ".env"
+    env_file.write_text(
+        "\n".join(
+            [
+                "OPENAI_API_KEY=test-key",
+                "LLM_MODEL=test-llm",
+                "EMBEDDING_MODEL=test-embedding",
+                "EMBEDDING_DIMENSION=1024",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("LLM_MODEL", raising=False)
+    monkeypatch.delenv("EMBEDDING_MODEL", raising=False)
+    monkeypatch.delenv("EMBEDDING_DIMENSION", raising=False)
+    monkeypatch.setattr("app.core.config._default_env_files", lambda: [env_file])
+    clear_settings_cache()
+
+    settings = get_settings()
+
+    assert settings.openai_api_key == "test-key"
+    assert settings.llm_model == "test-llm"
+    assert settings.embedding_model == "test-embedding"
+    assert settings.embedding_dimension == 1024
+    clear_settings_cache()
+
+
+def test_empty_environment_variables_do_not_override_env_file(monkeypatch, tmp_path) -> None:
+    from app.core.config import get_settings
+
+    env_file = tmp_path / ".env"
+    env_file.write_text(
+        "\n".join(
+            [
+                "LLM_MODEL=file-llm",
+                "EMBEDDING_MODEL=file-embedding",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("LLM_MODEL", "")
+    monkeypatch.setenv("EMBEDDING_MODEL", "")
+    monkeypatch.setattr("app.core.config._default_env_files", lambda: [env_file])
+    clear_settings_cache()
+
+    settings = get_settings()
+
+    assert settings.llm_model == "file-llm"
+    assert settings.embedding_model == "file-embedding"
+    clear_settings_cache()
+
+
 def test_simulated_task_can_be_created_read_and_failed() -> None:
     client = make_client()
 

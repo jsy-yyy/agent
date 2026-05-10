@@ -3,3 +3,7 @@ uvicorn[standard]
 python-multipart
 pydantic
 pydantic-settings
+PyMuPDF
+openai
+faiss-cpu
+numpy
